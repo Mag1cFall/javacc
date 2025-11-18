@@ -1,7 +1,16 @@
-#include "${parser_name}State.h"
-#include "Node.h"
-#include <string.h>
-#include <stdlib.h>
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
+
+\#include "${parser_name}State.h"
+\#include "Node.h"
+\#include <string.h>
+\#include <stdlib.h>
 
 void JJT${parser_name}State_clear(JJT${parser_name}State* self) {
   while (self->sp > 0) {

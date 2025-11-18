@@ -1,9 +1,18 @@
-#include "Token.h"
-#include <stdlib.h>
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
 
-#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
-#else
-#endif
+\#include "Token.h"
+\#include <stdlib.h>
+
+\#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+\#else
+\#endif
 
 JJString Token_getImage(Token* t) {
   return t->image;

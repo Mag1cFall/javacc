@@ -1,0 +1,41 @@
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
+
+\#include "ErrorHandler.h"
+\#include <stdio.h>
+\#include <stdlib.h>
+
+static void _handleUnexpectedToken(struct ErrorHandler* self, int expectedToken, JJString expectedTokenImage, void* a, void* b) {
+    // In C, we cannot easily get token details without more context.
+    // Placeholder implementation.
+    fprintf(stderr, "Error: Unexpected token.\n");
+}
+
+static void _lexicalError(struct ErrorHandler* self, bool EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, int curChar, void* tokenManager) {
+    fprintf(stderr, "Lexical error at line %d, column %d. Encountered: %c after: %s\n", errorLine, errorColumn, (char)curChar, errorAfter.str);
+}
+
+static void _handleOtherError(struct ErrorHandler* self, JJString message, void* b) {
+    fprintf(stderr, "Error: %s\n", message.str);
+}
+
+static void _delete(struct ErrorHandler* self) {
+    if (self) {
+        free(self);
+    }
+}
+
+ErrorHandler* newErrorHandler() {
+    ErrorHandler* handler = (ErrorHandler*)calloc(1, sizeof(ErrorHandler));
+    handler->handleUnexpectedToken = _handleUnexpectedToken;
+    handler->lexicalError = _lexicalError;
+    handler->handleOtherError = _handleOtherError;
+    handler->_delete = _delete;
+    return handler;
+}

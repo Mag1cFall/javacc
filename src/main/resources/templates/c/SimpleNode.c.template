@@ -1,7 +1,16 @@
-#include "${node_class}.h"
-#include "Token.h"
-#include <stdlib.h>
-#include <string.h>
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
+
+\#include "${node_class}.h"
+\#include "Token.h"
+\#include <stdlib.h>
+\#include <string.h>
 
 static void _dump(${node_class} *self, const char* prefix) {
   // TODO: Add dump implementation if needed

@@ -1,6 +1,15 @@
-#include "ParseException.h"
-#include <stdlib.h>
-#include <string.h>
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
+
+\#include "ParseException.h"
+\#include <stdlib.h>
+\#include <string.h>
 
 ParseException* new_ParseException() {
   ParseException* e = (ParseException*)calloc(1, sizeof(ParseException));

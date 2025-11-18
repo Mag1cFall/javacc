@@ -132,7 +132,7 @@ public class RStringLiteral extends RegularExpression {
     if (Options.isOutputLanguageJava()) {
       DumpStrLiteralImagesForJava(codeGenerator);
       return;
-    } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+    } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
 
 	    // For C++
 	    String image;
@@ -562,10 +562,10 @@ public class RStringLiteral extends RegularExpression {
   static void DumpStartWithStates(CodeGenerator codeGenerator)
   {
 	// TODO :: CBA --  Require Unification of output language specific processing into a single Enum class
-    if (Options.isOutputLanguageJava()) {
+     if (Options.isOutputLanguageJava()) {
      codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                   "jjStartNfaWithStates" + Main.lg.lexStateSuffix + "(int pos, int kind, int state)");
-    } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+    } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
      codeGenerator.generateMethodDefHeader("int", Main.lg.tokMgrClassName, "jjStartNfaWithStates" + Main.lg.lexStateSuffix + "(int pos, int kind, int state)");
     } else {
     	throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
@@ -589,11 +589,11 @@ public class RStringLiteral extends RegularExpression {
      if (Options.isOutputLanguageJava()) {
        codeGenerator.genCodeLine("   try { curChar = input_stream.readChar(); }");
        codeGenerator.genCodeLine("   catch(java.io.IOException e) { return pos + 1; }");
-     } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)){
+     } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()){
        codeGenerator.genCodeLine("   if (input_stream->endOfInput()) { return pos + 1; }");
        codeGenerator.genCodeLine("   curChar = input_stream->readChar();");
      } else {
-    	 throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
+     	 throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
      }
      if (Options.getDebugTokenManager()) {
        if (codeGenerator.isJavaLanguage()) {
@@ -623,10 +623,10 @@ public class RStringLiteral extends RegularExpression {
      if (Options.isOutputLanguageJava()) {
      codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                   "jjStopAtPos(int pos, int kind)");
-     } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+     } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
        codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName , "jjStopAtPos(int pos, int kind)");
      } else {
-    	 throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
+     	 throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
      }
      codeGenerator.genCodeLine("{");
      codeGenerator.genCodeLine("   jjmatchedKind = kind;");
@@ -691,7 +691,7 @@ public class RStringLiteral extends RegularExpression {
      if (Options.isOutputLanguageJava()) {
         codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                        "jjMoveStringLiteralDfa0" + Main.lg.lexStateSuffix + "()");
-      } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+      } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
         codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa0" + Main.lg.lexStateSuffix + "()");
       } else {
     	  throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
@@ -763,7 +763,7 @@ public class RStringLiteral extends RegularExpression {
      if (Options.isOutputLanguageJava()) {
         codeGenerator.genCode((Options.getStatic() ? "static " : "") + "private int " +
                        "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + params);
-      } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+      } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
         codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + params);
       } else {
     	  throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
@@ -867,7 +867,7 @@ public class RStringLiteral extends RegularExpression {
            if (Options.isOutputLanguageJava()) {
              codeGenerator.genCodeLine("   try { curChar = input_stream.readChar(); }");
              codeGenerator.genCodeLine("   catch(java.io.IOException e) {");
-           } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+           } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()){
              codeGenerator.genCodeLine("   if (input_stream->endOfInput()) {");
            } else {
         	   throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
@@ -915,7 +915,7 @@ public class RStringLiteral extends RegularExpression {
 
 
      // TODO :: CBA --  Require Unification of output language specific processing into a single Enum class
-        if (i != 0 && Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP) ) {
+        if (i != 0 && (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) ) {
           codeGenerator.genCodeLine("   curChar = input_stream->readChar();");
         }
 
@@ -1104,7 +1104,7 @@ public class RStringLiteral extends RegularExpression {
                  codeGenerator.genCode("         return ");
 
                  codeGenerator.genCode("jjMoveStringLiteralDfa" + (i + 1) +
-                                Main.lg.lexStateSuffix + "(");
+                                 Main.lg.lexStateSuffix + "(");
                  for (j = 0; j < maxLongsReqd - 1; j++)
                     if ((i + 1) <= maxLenForActive[j])
                     {
@@ -1130,7 +1130,7 @@ public class RStringLiteral extends RegularExpression {
                  codeGenerator.genCode("         return ");
 
                  codeGenerator.genCode("jjMoveStringLiteralDfa" + (i + 1) +
-                                Main.lg.lexStateSuffix + "(");
+                                 Main.lg.lexStateSuffix + "(");
 
                  for (j = 0; j < maxLongsReqd - 1; j++)
                     if ((i + 1) <= maxLenForActive[j] + 1)
@@ -1381,7 +1381,7 @@ public class RStringLiteral extends RegularExpression {
               statesForPos[j] = new Hashtable();
 
            if ((actives = ((long[])statesForPos[j].get(kind + ", " +
-                                    jjmatchedPos + ", " + stateSetString))) == null)
+                                     jjmatchedPos + ", " + stateSetString))) == null)
            {
               actives = new long[maxKindsReqd];
               statesForPos[j].put(kind + ", " + jjmatchedPos + ", " +

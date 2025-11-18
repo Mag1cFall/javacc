@@ -1,9 +1,18 @@
-#include "CharStream.h"
-#include "JavaCC.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
+/*
+ * ${tool_name} Version ${version}
+ *
+ * File:    ${file_name}
+ * Author:  ${author}
+ * Change history:
+ *   - created: ${date}
+ */
+
+\#include "CharStream.h"
+\#include "JavaCC.h"
+\#include <stdlib.h>
+\#include <string.h>
+\#include <stdbool.h>
+\#include <stdio.h>
 
 static JJChar SimpleCharStream_readChar(CharStream* stream) {
   SimpleCharStream* self = (SimpleCharStream*)stream;
