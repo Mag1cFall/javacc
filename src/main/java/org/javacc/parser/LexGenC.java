@@ -490,7 +490,8 @@ public class LexGenC extends LexGen implements JavaCCParserConstants //CodeGener
       else
         charStreamName = "SimpleCharStream";
     }
-
+    
+    switchToMainFile();
     writeTemplate("/templates/c/TokenManagerBoilerPlateMethods.template",
       "charStreamName", "CharStream",
       "parserClassName", cu_name,
@@ -498,6 +499,50 @@ public class LexGenC extends LexGen implements JavaCCParserConstants //CodeGener
       "lexStateNameLength", lexStateName.length,
       "tokMgrClassName", tokMgrClassName
       );
+
+    genCodeLine("");
+    genCodeLine("void " + tokMgrClassName + "_ReInitRounds(" + tokMgrClassName + "* self) {");
+    genCodeLine("    int i;");
+    genCodeLine("    self->jjround = 0x80000001;");
+    genCodeLine("    for (i = " + NfaState.generatedStates + "; i-- > 0;)");
+    genCodeLine("        self->jjrounds[i] = 0x80000000;");
+    genCodeLine("}");
+    genCodeLine("");
+    
+    genCodeLine("void lexicalError(int EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, JJChar curChar) {");
+    genCodeLine("    fprintf(stderr, \"Lexical error at line %d, column %d.\\n\", errorLine, errorColumn);");
+    genCodeLine("    exit(1);");
+    genCodeLine("}");
+    genCodeLine("");
+    
+    genCodeLine(tokMgrClassName + "* new" + tokMgrClassName + "(CharStream* stream) {");
+    genCodeLine("    " + tokMgrClassName + "* self = (" + tokMgrClassName + "*)malloc(sizeof(" + tokMgrClassName + "));");
+    genCodeLine("    if (!self) return NULL;");
+    genCodeLine("    self->input_stream = stream;");
+    genCodeLine("    self->curLexState = 0;");
+    genCodeLine("    self->jjnewStateCnt = 0;");
+    genCodeLine("    self->jjround = 1;");
+    genCodeLine("    self->jjmatchedPos = 0;");
+    genCodeLine("    self->jjmatchedKind = 0;");
+    genCodeLine("    self->debugStream = stdout;");
+    genCodeLine("    self->curChar = 0;");
+    genCodeLine("    self->jjstateSet = (int*)calloc(" + NfaState.generatedStates + ", sizeof(int));");
+    genCodeLine("    self->jjrounds = (int*)calloc(" + NfaState.generatedStates + ", sizeof(int));");
+    genCodeLine("    if (!self->jjstateSet || !self->jjrounds) {");
+    genCodeLine("        free(self->jjstateSet);");
+    genCodeLine("        free(self->jjrounds);");
+    genCodeLine("        free(self);");
+    genCodeLine("        return NULL;");
+    genCodeLine("    }");
+    genCodeLine("    " + tokMgrClassName + "_ReInitRounds(self);");
+    genCodeLine("    return self;");
+    genCodeLine("}");
+    genCodeLine("");
+    
+    genCodeLine("ErrorHandler* newErrorHandler() {");
+    genCodeLine("    return NULL;");
+    genCodeLine("}");
+    genCodeLine("");
 
     dumpBoilerPlateInHeader();
 

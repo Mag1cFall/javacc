@@ -29,6 +29,8 @@ typedef struct TokenManager {
 
 \#define delete_TokenManager(tm) do { if (tm && (tm)->_delete) (tm)->_delete(tm); } while(0)
 
+void lexicalError(int EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, JJChar curChar);
+
 \#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
 \#else
 \#endif
