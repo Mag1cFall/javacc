@@ -1,27 +1,9 @@
-
 options {
   STATIC = false;
   OUTPUT_LANGUAGE = "C";
 }
 
 PARSER_BEGIN(CParser)
-#include <stdio.h>
-#include <stdlib.h>
-#include "CParser.h"
-
-int main(int argc, char** argv) {
-  if (argc < 2) {
-    printf("Usage: %s <input_file>\n", argv[0]);
-    return 1;
-  }
-  CParser* parser = newCParser(argv[1]);
-  if (!parser) {
-    return 1;
-  }
-  CParser_parse(parser);
-  deleteCParser(parser);
-  return 0;
-}
 PARSER_END(CParser)
 
 TOKEN :

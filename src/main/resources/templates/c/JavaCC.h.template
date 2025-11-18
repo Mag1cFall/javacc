@@ -30,7 +30,7 @@
   \#endif
 \#endif
 
-typedef unsigned short JJChar;
+typedef char JJChar;
 
 typedef struct {
     char *str;

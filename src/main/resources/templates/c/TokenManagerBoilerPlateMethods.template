@@ -3,20 +3,22 @@
 #include <string.h>
 #include "${tokMgrClassName}.h"
 
-static int jjrounds[${lexStateNameLength}];
-static int jjstateSet[${lexStateNameLength} * 2];
+void lexicalError(int EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, JJChar curChar);
+
 static JJChar jjnextStates[];
 
 void ${tokMgrClassName}_ReInitRounds(${tokMgrClassName}* self) {
   int i;
   self->jjround = 0x80000001;
   for (i = ${lexStateNameLength} * 2; i-- > 0;)
-    jjstateSet[i] = 0;
+    self->jjstateSet[i] = 0;
 }
 
 ${tokMgrClassName}* new${tokMgrClassName}(JAVACC_CHARSTREAM *stream) {
   ${tokMgrClassName}* self = (${tokMgrClassName}*)calloc(1, sizeof(${tokMgrClassName}));
   self->debugStream = stdout;
+  self->jjstateSet = (int*)calloc(${lexStateNameLength} * 2, sizeof(int));
+  self->jjrounds = (int*)calloc(${lexStateNameLength}, sizeof(int));
   ${tokMgrClassName}_ReInit(self, stream);
   return self;
 }
@@ -24,6 +26,8 @@ ${tokMgrClassName}* new${tokMgrClassName}(JAVACC_CHARSTREAM *stream) {
 void delete${tokMgrClassName}(${tokMgrClassName}* self) {
     if (self) {
         JJString_delete(&self->image);
+        free(self->jjstateSet);
+        free(self->jjrounds);
         free(self);
     }
 }
@@ -57,9 +61,18 @@ const JJSimpleString ${tokMgrClassName}_jjKindsForBitVector(int i, unsigned long
 }
 
 const JJSimpleString ${tokMgrClassName}_jjKindsForStateVector(int lexState, int vec[], int start, int end) {
-    // Implementation for debugging, can be simplified for C
     static char buf[1024];
     sprintf(buf, "Error: implementation for jjKindsForStateVector not provided in C template.");
     JJSimpleString s = { buf, strlen(buf) };
     return s;
+}
+
+void lexicalError(int EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, JJChar curChar) {
+    fprintf(stderr, "Lexical error at line %d, column %d. ", errorLine, errorColumn);
+    if (EOFSeen) {
+        fprintf(stderr, "Encountered: <EOF> after : \"%.*s\"\n", (int)errorAfter.len, errorAfter.str);
+    } else {
+        fprintf(stderr, "Encountered: '%c' (%d) after : \"%.*s\"\n", curChar, (int)curChar, (int)errorAfter.len, errorAfter.str);
+    }
+    exit(1);
 }

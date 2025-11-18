@@ -208,9 +208,13 @@ public class OutputFileGenerator {
         text = text.replace("StringBuffer", "StringBuilder");
     }
 
-    // TODO :: Added by Sreenivas on 12 June 2013 for 6.0 release, merged in to 6.1 release for sake of compatibility by cainsley ... This needs to be removed urgently!!!
-    if (text.startsWith("\\#")) { // Hack to escape # for C++
-      text = text.substring(1);
+    int leadingSpaces = 0;
+    while (leadingSpaces < text.length() && text.charAt(leadingSpaces) == ' ') {
+      leadingSpaces++;
+    }
+    
+    if (text.length() > leadingSpaces && text.substring(leadingSpaces).startsWith("\\#")) {
+      text = text.substring(0, leadingSpaces) + text.substring(leadingSpaces + 1);
     }
     out.println(text);
   }

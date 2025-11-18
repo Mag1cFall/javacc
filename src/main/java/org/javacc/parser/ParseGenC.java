@@ -271,7 +271,7 @@ public void start() throws MetaParseException {
     genCodeLine("    }");
     genCodeLine("  }");
     genCodeLine("  if (self->errorHandler) {");
-    genCodeLine("    deleteErrorHandler(self->errorHandler); self->errorHandler = NULL;");
+    genCodeLine("    delete_ErrorHandler(self->errorHandler); self->errorHandler = NULL;");
     genCodeLine("  }");
     if (Options.getDepthLimit() > 0) {
       genCodeLine("  //assert(self->jj_depth==0);");

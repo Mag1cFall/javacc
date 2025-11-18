@@ -368,6 +368,9 @@ public class CodeGenerator {
   }
 
   protected String getClassQualifier(String className) {
+    if (Options.isOutputLanguageC()) {
+      return "";
+    }
     return className == null ? "" : className + "::";
   }
 

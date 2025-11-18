@@ -212,7 +212,7 @@ public class RStringLiteral extends RegularExpression {
 	    codeGenerator.genCodeLine("static const JJString " +
 	                              "jjstrLiteralImages[] = {");
 	    for (int j = 0; j < literalCount; j++) {
-	      codeGenerator.genCodeLine("jjstrLiteralChars_" + j + ", ");
+	      codeGenerator.genCodeLine("{jjstrLiteralChars_" + j + "}, ");
 	    }
 	    codeGenerator.genCodeLine("};");
     } else {
@@ -431,9 +431,13 @@ public class RStringLiteral extends RegularExpression {
   {
      codeGenerator.genCodeLine("{");
 
-     if (NfaState.generatedStates != 0)
-        codeGenerator.genCodeLine("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(" + NfaState.InitStateName() + ", 0);");
-     else
+     if (NfaState.generatedStates != 0) {
+        if (codeGenerator.isJavaLanguage()) {
+           codeGenerator.genCodeLine("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(" + NfaState.InitStateName() + ", 0);");
+        } else {
+           codeGenerator.genCodeLine("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(self, " + NfaState.InitStateName() + ", 0);");
+        }
+     } else
         codeGenerator.genCodeLine("   return 1;");
 
      codeGenerator.genCodeLine("}");
@@ -566,7 +570,7 @@ public class RStringLiteral extends RegularExpression {
      codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                   "jjStartNfaWithStates" + Main.lg.lexStateSuffix + "(int pos, int kind, int state)");
     } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
-     codeGenerator.generateMethodDefHeader("int", Main.lg.tokMgrClassName, "jjStartNfaWithStates" + Main.lg.lexStateSuffix + "(int pos, int kind, int state)");
+     codeGenerator.generateMethodDefHeader("int", Main.lg.tokMgrClassName, "jjStartNfaWithStates" + Main.lg.lexStateSuffix + "(" + Main.lg.tokMgrClassName + "* self, int pos, int kind, int state)");
     } else {
     	throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
     }
@@ -692,9 +696,9 @@ public class RStringLiteral extends RegularExpression {
         codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                        "jjMoveStringLiteralDfa0" + Main.lg.lexStateSuffix + "()");
       } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
-        codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa0" + Main.lg.lexStateSuffix + "()");
+        codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa0" + Main.lg.lexStateSuffix + "(" + Main.lg.tokMgrClassName + "* self, JJChar curChar)");
       } else {
-    	  throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
+       throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
       }
         DumpNullStrLiterals(codeGenerator);
         return;
@@ -761,13 +765,19 @@ public class RStringLiteral extends RegularExpression {
 
      // TODO :: CBA --  Require Unification of output language specific processing into a single Enum class
      if (Options.isOutputLanguageJava()) {
-        codeGenerator.genCode((Options.getStatic() ? "static " : "") + "private int " +
-                       "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + params);
-      } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
-        codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + params);
-      } else {
-    	  throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
-      }
+       codeGenerator.genCode((Options.getStatic() ? "static " : "") + "private int " +
+                      "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + params);
+     } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
+       String methodParams;
+       if (i == 0) {
+         methodParams = "(" + Main.lg.tokMgrClassName + "* self, JJChar curChar)";
+       } else {
+         methodParams = "(" + Main.lg.tokMgrClassName + "* self, JJChar curChar" + (params.length() > 2 ? ", " + params.substring(1) : ")");
+       }
+       codeGenerator.generateMethodDefHeader(" int ", Main.lg.tokMgrClassName, "jjMoveStringLiteralDfa" + i + Main.lg.lexStateSuffix + methodParams);
+     } else {
+      throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
+     }
 
       codeGenerator.genCodeLine("{");
 
@@ -798,8 +808,13 @@ public class RStringLiteral extends RegularExpression {
               codeGenerator.genCodeLine(") == 0L)");
               if (!Main.lg.mixed[Main.lg.lexStateIndex] && NfaState.generatedStates != 0)
               {
-                 codeGenerator.genCode("      return jjStartNfa" + Main.lg.lexStateSuffix +
-                                 "(" + (i - 2) + ", ");
+                 if (codeGenerator.isJavaLanguage()) {
+                    codeGenerator.genCode("      return jjStartNfa" + Main.lg.lexStateSuffix +
+                                    "(" + (i - 2) + ", ");
+                 } else {
+                    codeGenerator.genCode("      return jjStartNfa" + Main.lg.lexStateSuffix +
+                                    "(self, " + (i - 2) + ", ");
+                 }
                  for (j = 0; j < maxLongsReqd - 1; j++)
                     if (i <= maxLenForActive[j] + 1)
                        codeGenerator.genCode("old" + j + ", ");
@@ -810,9 +825,15 @@ public class RStringLiteral extends RegularExpression {
                  else
                     codeGenerator.genCodeLine("0L);");
               }
-              else if (NfaState.generatedStates != 0)
-                 codeGenerator.genCodeLine("      return jjMoveNfa" + Main.lg.lexStateSuffix +
-                         "(" + NfaState.InitStateName() + ", " + (i - 1) + ");");
+              else if (NfaState.generatedStates != 0) {
+                 if (codeGenerator.isJavaLanguage()) {
+                    codeGenerator.genCodeLine("      return jjMoveNfa" + Main.lg.lexStateSuffix +
+                            "(" + NfaState.InitStateName() + ", " + (i - 1) + ");");
+                 } else {
+                    codeGenerator.genCodeLine("      return jjMoveNfa" + Main.lg.lexStateSuffix +
+                            "(self, " + NfaState.InitStateName() + ", " + (i - 1) + ");");
+                 }
+              }
               else
                  codeGenerator.genCodeLine("      return " + i + ";");
            }
@@ -1068,9 +1089,15 @@ public class RStringLiteral extends RegularExpression {
                        if (stateSetName != -1)
                        {
                           createStartNfa = true;
-                          codeGenerator.genCodeLine(prefix + "return jjStartNfaWithStates" +
-                              Main.lg.lexStateSuffix + "(" + i +
-                              ", " + kindToPrint + ", " + stateSetName + ");");
+                          if (codeGenerator.isJavaLanguage()) {
+                             codeGenerator.genCodeLine(prefix + "return jjStartNfaWithStates" +
+                                 Main.lg.lexStateSuffix + "(" + i +
+                                 ", " + kindToPrint + ", " + stateSetName + ");");
+                          } else {
+                             codeGenerator.genCodeLine(prefix + "return jjStartNfaWithStates" +
+                                 Main.lg.lexStateSuffix + "(self, " + i +
+                                 ", " + kindToPrint + ", " + stateSetName + ");");
+                          }
                        }
                        else
                           codeGenerator.genCodeLine(prefix + "return jjStopAtPos" + "(" + i + ", " + kindToPrint + ");");
@@ -1167,10 +1194,15 @@ public class RStringLiteral extends RegularExpression {
               if (i == 0 && Main.lg.mixed[Main.lg.lexStateIndex])
               {
 
-                 if (NfaState.generatedStates != 0)
-                    codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
-                            "(" + NfaState.InitStateName() + ", 0);");
-                 else
+                 if (NfaState.generatedStates != 0) {
+                    if (codeGenerator.isJavaLanguage()) {
+                       codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
+                               "(" + NfaState.InitStateName() + ", 0);");
+                    } else {
+                       codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
+                               "(self, " + NfaState.InitStateName() + ", 0);");
+                    }
+                 } else
                     codeGenerator.genCodeLine("         return 1;");
               }
               else if (i != 0) // No more str literals to look for
@@ -1199,8 +1231,13 @@ public class RStringLiteral extends RegularExpression {
            {
               /* This means no string literal is possible. Just move nfa with
                  this guy and return. */
-              codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
-                      "(" + NfaState.InitStateName() + ", 0);");
+              if (codeGenerator.isJavaLanguage()) {
+                 codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
+                         "(" + NfaState.InitStateName() + ", 0);");
+              } else {
+                 codeGenerator.genCodeLine("         return jjMoveNfa" + Main.lg.lexStateSuffix +
+                         "(self, " + NfaState.InitStateName() + ", 0);");
+              }
            }
            else
            {
@@ -1226,7 +1263,11 @@ public class RStringLiteral extends RegularExpression {
                  string literals are possible. So set the kind and state set
                  upto and including this position for the matched string. */
 
-              codeGenerator.genCode("   return jjStartNfa" + Main.lg.lexStateSuffix + "(" + (i - 1) + ", ");
+              if (codeGenerator.isJavaLanguage()) {
+                 codeGenerator.genCode("   return jjStartNfa" + Main.lg.lexStateSuffix + "(" + (i - 1) + ", ");
+              } else {
+                 codeGenerator.genCode("   return jjStartNfa" + Main.lg.lexStateSuffix + "(self, " + (i - 1) + ", ");
+              }
               for (k = 0; k < maxLongsReqd - 1; k++)
                  if (i <= maxLenForActive[k])
                     codeGenerator.genCode("active" + k + ", ");
@@ -1558,7 +1599,8 @@ public class RStringLiteral extends RegularExpression {
        codeGenerator.genCode("private" + (Options.getStatic() ? " static" : "") + " final int jjStartNfa" +
                   Main.lg.lexStateSuffix + params);
      } else {
-       codeGenerator.generateMethodDefHeader("int ", Main.lg.tokMgrClassName, "jjStartNfa" + Main.lg.lexStateSuffix + params);
+       String methodParams = "(" + Main.lg.tokMgrClassName + "* self" + (params.length() > 2 ? ", " + params.substring(1) : ")");
+       codeGenerator.generateMethodDefHeader("int ", Main.lg.tokMgrClassName, "jjStartNfa" + Main.lg.lexStateSuffix + methodParams);
      }
      codeGenerator.genCodeLine("{");
 

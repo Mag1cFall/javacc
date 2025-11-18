@@ -2937,7 +2937,7 @@ public class NfaState
         codeGenerator.genCodeLine((Options.getStatic() ? "static " : "") + "private int " +
                     "jjMoveNfa" + Main.lg.lexStateSuffix + "(int startState, int curPos)");
       } else {
-        codeGenerator.generateMethodDefHeader("int", Main.lg.tokMgrClassName, "jjMoveNfa" + Main.lg.lexStateSuffix + "(int startState, int curPos)");
+        codeGenerator.generateMethodDefHeader("int", Main.lg.tokMgrClassName, "jjMoveNfa" + Main.lg.lexStateSuffix + "(" + Main.lg.tokMgrClassName + "* self, int startState, int curPos)");
       }
       codeGenerator.genCodeLine("{");
       if (generatedStates == 0)
@@ -2949,21 +2949,32 @@ public class NfaState
 
       if (Main.lg.mixed[Main.lg.lexStateIndex])
       {
-         codeGenerator.genCodeLine("   int strKind = jjmatchedKind;");
-         codeGenerator.genCodeLine("   int strPos = jjmatchedPos;");
-         codeGenerator.genCodeLine("   int seenUpto;");
          if (codeGenerator.isJavaLanguage()) {
+           codeGenerator.genCodeLine("   int strKind = jjmatchedKind;");
+           codeGenerator.genCodeLine("   int strPos = jjmatchedPos;");
+           codeGenerator.genCodeLine("   int seenUpto;");
            codeGenerator.genCodeLine("   input_stream.backup(seenUpto = curPos + 1);");
            codeGenerator.genCodeLine("   try { curChar = input_stream.readChar(); }");
            codeGenerator.genCodeLine("   catch(java.io.IOException e) { throw new Error(\"Internal Error\"); }");
          } else {
-           codeGenerator.genCodeLine("   input_stream->backup(seenUpto = curPos + 1);");
-           codeGenerator.genCodeLine("   assert(!input_stream->endOfInput());");
-           codeGenerator.genCodeLine("   curChar = input_stream->readChar();");
+           codeGenerator.genCodeLine("   int strKind = self->jjmatchedKind;");
+           codeGenerator.genCodeLine("   int strPos = self->jjmatchedPos;");
+           codeGenerator.genCodeLine("   int seenUpto;");
+           codeGenerator.genCodeLine("   self->input_stream->backup(seenUpto = curPos + 1);");
+           codeGenerator.genCodeLine("   assert(!self->input_stream->endOfInput());");
+           codeGenerator.genCodeLine("   self->curChar = self->input_stream->readChar();");
          }
          codeGenerator.genCodeLine("   curPos = 0;");
       }
 
+      if (!codeGenerator.isJavaLanguage()) {
+        codeGenerator.genCodeLine("   JJChar curChar = self->curChar;");
+        codeGenerator.genCodeLine("   int jjnewStateCnt;");
+        codeGenerator.genCodeLine("   int* jjstateSet = self->jjstateSet;");
+        codeGenerator.genCodeLine("   int jjround = self->jjround;");
+        codeGenerator.genCodeLine("   int jjmatchedKind = self->jjmatchedKind;");
+        codeGenerator.genCodeLine("   int jjmatchedPos = self->jjmatchedPos;");
+      }
       codeGenerator.genCodeLine("   int startsAt = 0;");
       codeGenerator.genCodeLine("   jjnewStateCnt = " + generatedStates + ";");
       codeGenerator.genCodeLine("   int i = 1;");
@@ -2995,8 +3006,13 @@ public class NfaState
       codeGenerator.genCodeLine("   int kind = 0x" + Integer.toHexString(Integer.MAX_VALUE) + ";");
       codeGenerator.genCodeLine("   for (;;)");
       codeGenerator.genCodeLine("   {");
-      codeGenerator.genCodeLine("      if (++jjround == 0x" + Integer.toHexString(Integer.MAX_VALUE) + ")");
-      codeGenerator.genCodeLine("         ReInitRounds();");
+      if (codeGenerator.isJavaLanguage()) {
+        codeGenerator.genCodeLine("      if (++jjround == 0x" + Integer.toHexString(Integer.MAX_VALUE) + ")");
+        codeGenerator.genCodeLine("         ReInitRounds();");
+      } else {
+        codeGenerator.genCodeLine("      if (++jjround == 0x" + Integer.toHexString(Integer.MAX_VALUE) + ")");
+        codeGenerator.genCodeLine("         " + Main.lg.tokMgrClassName + "_ReInitRounds(self);");
+      }
       codeGenerator.genCodeLine("      if (curChar < 64)");
       codeGenerator.genCodeLine("      {");
 
@@ -3066,11 +3082,11 @@ public class NfaState
         codeGenerator.genCodeLine("      try { curChar = input_stream.readChar(); }");
       } else {
         if (Main.lg.mixed[Main.lg.lexStateIndex]) {
-          codeGenerator.genCodeLine("      if (input_stream->endOfInput()) { break; }");
+          codeGenerator.genCodeLine("      if (self->input_stream->endOfInput(self->input_stream)) { break; }");
         } else {
-          codeGenerator.genCodeLine("      if (input_stream->endOfInput()) { return curPos; }");
+          codeGenerator.genCodeLine("      if (self->input_stream->endOfInput(self->input_stream)) { return curPos; }");
         }
-        codeGenerator.genCodeLine("      curChar = input_stream->readChar();");
+        codeGenerator.genCodeLine("      curChar = self->input_stream->readChar(self->input_stream);");
       }
 
       if (Main.lg.mixed[Main.lg.lexStateIndex]) {
@@ -3103,7 +3119,18 @@ public class NfaState
       if (Main.lg.mixed[Main.lg.lexStateIndex])
       {
          codeGenerator.genCodeLine("   if (jjmatchedPos > strPos)");
-         codeGenerator.genCodeLine("      return curPos;");
+         if (!codeGenerator.isJavaLanguage()) {
+            codeGenerator.genCodeLine("   {");
+            codeGenerator.genCodeLine("      self->curChar = curChar;");
+            codeGenerator.genCodeLine("      self->jjnewStateCnt = jjnewStateCnt;");
+            codeGenerator.genCodeLine("      self->jjround = jjround;");
+            codeGenerator.genCodeLine("      self->jjmatchedKind = jjmatchedKind;");
+            codeGenerator.genCodeLine("      self->jjmatchedPos = jjmatchedPos;");
+            codeGenerator.genCodeLine("      return curPos;");
+            codeGenerator.genCodeLine("   }");
+         } else {
+            codeGenerator.genCodeLine("      return curPos;");
+         }
          codeGenerator.genCodeLine("");
          if (codeGenerator.isJavaLanguage()) {
            codeGenerator.genCodeLine("   int toRet = Math.max(curPos, seenUpto);");
@@ -3134,6 +3161,13 @@ public class NfaState
          codeGenerator.genCodeLine("   return toRet;");
       }
 
+      if (!codeGenerator.isJavaLanguage()) {
+        codeGenerator.genCodeLine("   self->curChar = curChar;");
+        codeGenerator.genCodeLine("   self->jjnewStateCnt = jjnewStateCnt;");
+        codeGenerator.genCodeLine("   self->jjround = jjround;");
+        codeGenerator.genCodeLine("   self->jjmatchedKind = jjmatchedKind;");
+        codeGenerator.genCodeLine("   self->jjmatchedPos = jjmatchedPos;");
+      }
       codeGenerator.genCodeLine("}");
       allStates.clear();
    }

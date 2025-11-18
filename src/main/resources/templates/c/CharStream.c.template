@@ -64,8 +64,7 @@ static JJString SimpleCharStream_GetImage(CharStream* stream) {
   if (self->bufpos >= self->tokenBegin)
     return JJString_from_char_array(self->buffer + self->tokenBegin, self->bufpos - self->tokenBegin + 1);
   else
-    // Complicated case for circular buffer not fully implemented here
-    return JJString_from_const("");
+    return JJString_FROM_CONST("");
 }
 
 static bool SimpleCharStream_endOfInput(CharStream* stream) {

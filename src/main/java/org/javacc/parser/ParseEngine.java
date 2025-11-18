@@ -774,12 +774,12 @@ public class ParseEngine {
       if (e_nrw.label.equals("")) {
         Object label = names_of_tokens.get(Integer.valueOf(e_nrw.ordinal));
         if (label != null) {
-          retval += "jj_consume_token(" + (String)label + tail;
+          retval += (isJavaDialect ? "jj_consume_token(" : cu_name + "_jj_consume_token(self, ") + (String)label + tail;
         } else {
-          retval += "jj_consume_token(" + e_nrw.ordinal + tail;
+          retval += (isJavaDialect ? "jj_consume_token(" : cu_name + "_jj_consume_token(self, ") + e_nrw.ordinal + tail;
         }
       } else {
-        retval += "jj_consume_token(" + e_nrw.label + tail;
+        retval += (isJavaDialect ? "jj_consume_token(" : cu_name + "_jj_consume_token(self, ") + e_nrw.label + tail;
       }
 
       if ( !isJavaDialect && Options.booleanValue(Options.USEROPTION__CPP_STOP_ON_FIRST_ERROR)) {
@@ -858,7 +858,7 @@ public class ParseEngine {
               !(e.parent instanceof BNFProduction) ||
               i != e_nrw.units.size() - 1) {
             wrap_in_block = true;
-            retval += "\nif (" + (isJavaDialect ? "true" : "!hasError") + ") {";
+            retval += "\nif (" + (isJavaDialect ? "true" : "!self->hasError") + ") {";
           }
         }
         retval += phase1ExpansionGen((Expansion)(e_nrw.units.get(i)));
@@ -882,7 +882,7 @@ public class ParseEngine {
       if (isJavaDialect) {
         retval += "label_" + labelIndex + ":\n";
       }
-      retval += "while (" + (isJavaDialect ? "true" : "!hasError") + ") {\u0001";
+      retval += "while (" + (isJavaDialect ? "true" : "!self->hasError") + ") {\u0001";
       retval += phase1ExpansionGen(nested_e);
       conds = new Lookahead[1];
       conds[0] = la;
@@ -916,7 +916,7 @@ public class ParseEngine {
       if (isJavaDialect) {
         retval += "label_" + labelIndex + ":\n";
       }
-      retval += "while (" + (isJavaDialect ? "true" : "!hasError") + ") {\u0001";
+      retval += "while (" + (isJavaDialect ? "true" : "!self->hasError") + ") {\u0001";
       conds = new Lookahead[1];
       conds[0] = la;
       actions = new String[2];
