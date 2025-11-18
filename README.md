@@ -29,6 +29,38 @@ Parser generated successfully.
 ```
 这些C代码文件会输出到根目录下，可以打开查看。
 
+使用gcc编译：
+```
+gcc -o myparser main.c CParser.c CParserTokenManager.c CharStream.c Token.c TokenMgrError.c ParseException.c
+```
+
+完整命令参考：(对于Windows，第一步在IDEA/Eclipse里mvn clean package，否则总会遇到不可预料的编码问题。Ubuntu 24.04 正常)
+```bash
+mvn clean package -DskipTests
+java -cp target/javacc-7.0.14-SNAPSHOT.jar org.javacc.parser.Main C_Test.jj
+gcc -o myparser main.c CParser.c CParserTokenManager.c CharStream.c Token.c TokenMgrError.c ParseException.c
+```
+
+文件更改内容可以查看commit记录。(https://github.com/Mag1cFall/javacc/commits/master/)
+
+
+### 语法规则 (C_Test.jj)
+```c
+TOKEN: <NUMBER: (["0"-"9"])+>
+void parse() : {} { <NUMBER> <EOF> { printf("Parsed a number.\n"); } }
+```
+**规则**: 接受一个或多个数字,后跟EOF
+
+### 测试用例
+```
+PS ~\javacc> gcc -o myparser main.c CParser.c CParserTokenManager.c CharStream.c Token.c TokenMgrError.c ParseException.c -w
+PS ~\javacc> .\myparser.exe 456789
+DEBUG: Program started
+DEBUG: Creating CharStream from input: 456789
+DEBUG: CharStream created successfully
+DEBUG: TokenManager created successfully
+DEBUG: Parser created, calling parse()
+```
 
 ***
 
