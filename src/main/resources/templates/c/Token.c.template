@@ -1,0 +1,25 @@
+#include "Token.h"
+#include <stdlib.h>
+
+#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+#else
+#endif
+
+JJString Token_getImage(Token* t) {
+  return t->image;
+}
+
+Token *newToken(int kind, JJString image) {
+    Token *tok = (Token *)calloc(1, sizeof(Token));
+    tok->kind = kind;
+    tok->image = image;
+    return tok;
+}
+
+void deleteToken(Token *t) {
+    if (t) {
+        JJString_delete(&t->image);
+        // Do not delete specialToken, it is handled elsewhere
+        free(t);
+    }
+}

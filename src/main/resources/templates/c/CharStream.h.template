@@ -1,0 +1,48 @@
+#ifndef CHAR_STREAM_H
+#define CHAR_STREAM_H
+
+#include "JavaCC.h"
+#include <stdbool.h>
+
+struct CharStream;
+
+typedef struct CharStream {
+  JJChar (*readChar)(struct CharStream* self);
+  void (*backup)(struct CharStream* self, int amount);
+  JJChar (*BeginToken)(struct CharStream* self);
+  JJString (*GetImage)(struct CharStream* self);
+  
+  int (*getEndColumn)(struct CharStream* self);
+  int (*getEndLine)(struct CharStream* self);
+  int (*getBeginColumn)(struct CharStream* self);
+  int (*getBeginLine)(struct CharStream* self);
+  bool (*getTrackLineColumn)(struct CharStream* self);
+  bool (*endOfInput)(struct CharStream* self);
+
+  void (*_delete)(struct CharStream* self);
+} CharStream;
+
+#define delete_CharStream(stream) do { if(stream && (stream)->_delete) (stream)->_delete(stream); } while(0)
+
+// Concrete implementation
+typedef struct SimpleCharStream {
+  CharStream base;
+  int bufsize;
+  int available;
+  int tokenBegin;
+  int bufpos;
+  JJChar* buffer;
+  int maxNextCharInd;
+  int inBuf;
+  int line;
+  int column;
+  // Simplified for example: reads from a string
+  const char* inputStream;
+  int inputStreamPos;
+} SimpleCharStream;
+
+// Factory for a common implementation
+CharStream* new_SimpleCharStream_from_string(const char* s);
+CharStream* new_SimpleCharStream_from_file(FILE* f); // Example for file
+
+#endif

@@ -1,0 +1,25 @@
+#ifndef TOKEN_MGR_ERROR_H
+#define TOKEN_MGR_ERROR_H
+
+#include "JavaCC.h"
+#include <stdbool.h>
+
+typedef struct TokenMgrError {
+  JJString message;
+  int errorCode;
+} TokenMgrError;
+
+TokenMgrError* new_TokenMgrError();
+void delete_TokenMgrError(TokenMgrError* err);
+
+void TokenMgrError_init(TokenMgrError *err, const char* mes, int reason);
+void TokenMgrError_init_full(TokenMgrError *err, bool EOFSeen, int lexState, int errorLine, int errorColumn, const char* errorAfter, int curChar, int reason);
+
+const char* TokenMgrError_getMessage(TokenMgrError* err);
+
+#define LEXICAL_ERROR 0
+#define STATIC_LEXER_ERROR 1
+#define INVALID_LEXICAL_STATE 2
+#define LOOP_DETECTED 3
+
+#endif

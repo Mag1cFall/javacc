@@ -1,0 +1,35 @@
+#ifndef NODE_H
+#define NODE_H
+
+#include <stdio.h>
+
+struct Token;
+
+typedef struct Node {
+  void (*jjtOpen)(struct Node* self);
+  void (*jjtClose)(struct Node* self);
+  void (*jjtSetParent)(struct Node* self, struct Node *p);
+  struct Node* (*jjtGetParent)(struct Node* self);
+  void (*jjtAddChild)(struct Node* self, struct Node *n, int i);
+  struct Node* (*jjtGetChild)(struct Node* self, int i);
+  int (*jjtGetNumChildren)(struct Node* self);
+  void (*dump)(struct Node* self, const char* prefix);
+  void (*_delete)(struct Node* self);
+  
+  int id;
+  void* value;
+  struct Token* first_token;
+  struct Token* last_token;
+} Node;
+
+#define Node_jjtOpen(node) (node)->jjtOpen(node)
+#define Node_jjtClose(node) (node)->jjtClose(node)
+#define Node_jjtSetParent(node, parent) (node)->jjtSetParent(node, parent)
+#define Node_jjtGetParent(node) (node)->jjtGetParent(node)
+#define Node_jjtAddChild(node, child, i) (node)->jjtAddChild(node, child, i)
+#define Node_jjtGetChild(node, i) (node)->jjtGetChild(node, i)
+#define Node_jjtGetNumChildren(node) (node)->jjtGetNumChildren(node)
+#define Node_dump(node, prefix) (node)->dump(node, prefix)
+#define delete_Node(node) do { if(node && (node)->_delete) (node)->_delete(node); } while(0)
+
+#endif

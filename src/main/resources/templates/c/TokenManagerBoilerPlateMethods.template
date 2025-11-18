@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "${tokMgrClassName}.h"
+
+static int jjrounds[${lexStateNameLength}];
+static int jjstateSet[${lexStateNameLength} * 2];
+static JJChar jjnextStates[];
+
+void ${tokMgrClassName}_ReInitRounds(${tokMgrClassName}* self) {
+  int i;
+  self->jjround = 0x80000001;
+  for (i = ${lexStateNameLength} * 2; i-- > 0;)
+    jjstateSet[i] = 0;
+}
+
+${tokMgrClassName}* new${tokMgrClassName}(JAVACC_CHARSTREAM *stream) {
+  ${tokMgrClassName}* self = (${tokMgrClassName}*)calloc(1, sizeof(${tokMgrClassName}));
+  self->debugStream = stdout;
+  ${tokMgrClassName}_ReInit(self, stream);
+  return self;
+}
+
+void delete${tokMgrClassName}(${tokMgrClassName}* self) {
+    if (self) {
+        JJString_delete(&self->image);
+        free(self);
+    }
+}
+
+void ${tokMgrClassName}_ReInit(${tokMgrClassName}* self, JAVACC_CHARSTREAM *stream) {
+  JJString_clear(&self->image);
+  self->jjmatchedPos = self->jjmatchedKind = 0;
+  self->curLexState = defaultLexState;
+  self->input_stream = stream;
+  ${tokMgrClassName}_ReInitRounds(self);
+}
+
+void ${tokMgrClassName}_SwitchTo(${tokMgrClassName}* self, int lexState) {
+  if (lexState >= ${lexStateNameLength} || lexState < 0) {
+    // TODO: Throw new TokenMgrError...
+  } else {
+    self->curLexState = lexState;
+  }
+}
+
+void ${tokMgrClassName}_clear(${tokMgrClassName}* self) {
+  // Free any resources allocated by the token manager
+}
+
+const JJSimpleString ${tokMgrClassName}_jjKindsForBitVector(int i, unsigned long long vec) {
+    // Implementation for debugging, can be simplified for C
+    static char buf[1024];
+    sprintf(buf, "Error: implementation for jjKindsForBitVector not provided in C template.");
+    JJSimpleString s = { buf, strlen(buf) };
+    return s;
+}
+
+const JJSimpleString ${tokMgrClassName}_jjKindsForStateVector(int lexState, int vec[], int start, int end) {
+    // Implementation for debugging, can be simplified for C
+    static char buf[1024];
+    sprintf(buf, "Error: implementation for jjKindsForStateVector not provided in C template.");
+    JJSimpleString s = { buf, strlen(buf) };
+    return s;
+}

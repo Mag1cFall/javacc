@@ -1,0 +1,27 @@
+#ifndef TOKEN_H
+#define TOKEN_H
+
+#include "JavaCC.h"
+#include <stdbool.h>
+
+#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+#else
+#endif
+
+typedef struct Token {
+  int kind;
+  int beginLine, beginColumn, endLine, endColumn;
+  JJString image;
+  struct Token *next;
+  struct Token *specialToken;
+} Token;
+
+JJString Token_getImage(Token* t);
+Token* newToken(int kind, JJString image);
+void deleteToken(Token *t);
+
+#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+#else
+#endif
+
+#endif

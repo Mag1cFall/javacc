@@ -1,0 +1,43 @@
+#ifndef JJT${parser_name}STATE_H
+#define JJT${parser_name}STATE_H
+
+#include "JavaCC.h"
+#include "Node.h"
+#include <stdbool.h>
+
+typedef struct NodeVector {
+  Node** elements;
+  int size;
+  int capacity;
+} NodeVector;
+
+typedef struct IntVector {
+  int* elements;
+  int size;
+  int capacity;
+} IntVector;
+
+typedef struct JJT${parser_name}State {
+  NodeVector nodes;
+  IntVector marks;
+
+  int sp;
+  int mk;
+  bool node_created;
+} JJT${parser_name}State;
+
+JJT${parser_name}State* new_JJT${parser_name}State();
+void delete_JJT${parser_name}State(JJT${parser_name}State* self);
+
+void JJT${parser_name}State_reset(JJT${parser_name}State* self);
+Node* JJT${parser_name}State_rootNode(JJT${parser_name}State* self);
+void JJT${parser_name}State_pushNode(JJT${parser_name}State* self, Node *n);
+Node* JJT${parser_name}State_popNode(JJT${parser_name}State* self);
+Node* JJT${parser_name}State_peekNode(JJT${parser_name}State* self);
+int JJT${parser_name}State_nodeArity(JJT${parser_name}State* self);
+void JJT${parser_name}State_clear(JJT${parser_name}State* self);
+void JJT${parser_name}State_openNodeScope(JJT${parser_name}State* self, Node *n);
+void JJT${parser_name}State_closeNodeScope(JJT${parser_name}State* self, Node *n, int num);
+void JJT${parser_name}State_closeNodeScopeEx(JJT${parser_name}State* self, Node *n, bool condition);
+
+#endif

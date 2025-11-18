@@ -1,0 +1,58 @@
+#include "${node_class}.h"
+#include "Token.h"
+#include <stdlib.h>
+#include <string.h>
+
+static void _jjtOpen(${node_class} *self) {
+}
+
+static void _jjtClose(${node_class} *self) {
+}
+
+static void _jjtSetParent(${node_class} *self, Node *p) {
+  self->parent = p;
+}
+
+static Node* _jjtGetParent(${node_class} *self) {
+  return self->parent;
+}
+
+static void _jjtAddChild(${node_class} *self, Node *n, int i) {
+  if (i >= self->children_size) {
+    int new_size = i + 4;
+    self->children = (Node**)realloc(self->children, new_size * sizeof(Node*));
+    memset(self->children + self->children_size, 0, (new_size - self->children_size) * sizeof(Node*));
+    self->children_size = new_size;
+  }
+  self->children[i] = n;
+}
+
+static Node* _jjtGetChild(${node_class} *self, int i) {
+  return self->children[i];
+}
+
+static int _jjtGetNumChildren(${node_class} *self) {
+  return (self->children == NULL) ? 0 : self->children_size;
+}
+
+static void _delete(${node_class}* self) {
+    if (self) {
+        free(self->children);
+        free(self);
+    }
+}
+
+${node_class}* new_${node_class}(int id) {
+  ${node_class}* node = (${node_class}*)calloc(1, sizeof(${node_class}));
+  node->base_Node.jjtOpen         = (void (*)(Node*))_jjtOpen;
+  node->base_Node.jjtClose        = (void (*)(Node*))_jjtClose;
+  node->base_Node.jjtSetParent    = (void (*)(Node*, Node*))_jjtSetParent;
+  node->base_Node.jjtGetParent    = (Node* (*)(Node*))_jjtGetParent;
+  node->base_Node.jjtAddChild     = (void (*)(Node*, Node*, int))_jjtAddChild;
+  node->base_Node.jjtGetChild     = (Node* (*)(Node*, int))_jjtGetChild;
+  node->base_Node.jjtGetNumChildren = (int (*)(Node*))_jjtGetNumChildren;
+  node->base_Node._delete         = (void (*)(Node*))_delete;
+  node->base_Node.id              = id;
+  return node;
+}
+

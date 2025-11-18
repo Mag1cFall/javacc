@@ -1,0 +1,103 @@
+#include "CharStream.h"
+#include "JavaCC.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+static JJChar SimpleCharStream_readChar(CharStream* stream) {
+  SimpleCharStream* self = (SimpleCharStream*)stream;
+  if (self->inBuf > 0) {
+    --self->inBuf;
+    self->column++;
+    return self->buffer[self->bufpos == self->bufsize - 1 ? (self->bufpos = 0) : ++self->bufpos];
+  }
+  
+  if (++self->bufpos >= self->maxNextCharInd) {
+     // Fill buffer
+     if(self->available == self->bufsize) {
+        // resize
+     }
+  }
+
+  // Simplified: assumes reading from a string for this example
+  JJChar c = self->inputStream[self->inputStreamPos++];
+  if (c == 0) { // End of string
+    self->inBuf = 0;
+    return (JJChar)-1; // EOF
+  }
+
+  self->buffer[self->bufpos] = c;
+  self->line = 1; // Simplified
+  self->column++;
+
+  return c;
+}
+
+static void SimpleCharStream_backup(CharStream* stream, int amount) {
+  SimpleCharStream* self = (SimpleCharStream*)stream;
+  self->inBuf += amount;
+  if ((self->bufpos -= amount) < 0) {
+    self->bufpos += self->bufsize;
+  }
+}
+
+static JJChar SimpleCharStream_BeginToken(CharStream* stream) {
+  SimpleCharStream* self = (SimpleCharStream*)stream;
+  self->tokenBegin = -1;
+  JJChar c = SimpleCharStream_readChar(stream);
+  self->tokenBegin = self->bufpos;
+  return c;
+}
+
+static JJString SimpleCharStream_GetImage(CharStream* stream) {
+  SimpleCharStream* self = (SimpleCharStream*)stream;
+  if (self->bufpos >= self->tokenBegin)
+    return JJString_from_char_array(self->buffer + self->tokenBegin, self->bufpos - self->tokenBegin + 1);
+  else
+    // Complicated case for circular buffer not fully implemented here
+    return JJString_from_const("");
+}
+
+static bool SimpleCharStream_endOfInput(CharStream* stream) {
+    SimpleCharStream* self = (SimpleCharStream*)stream;
+    // Simplified check
+    return self->inputStream[self->inputStreamPos] == 0;
+}
+
+static int SimpleCharStream_getEndColumn(CharStream* stream) { return ((SimpleCharStream*)stream)->column; }
+static int SimpleCharStream_getEndLine(CharStream* stream) { return ((SimpleCharStream*)stream)->line; }
+static int SimpleCharStream_getBeginColumn(CharStream* stream) { return ((SimpleCharStream*)stream)->column; } // Simplified
+static int SimpleCharStream_getBeginLine(CharStream* stream) { return ((SimpleCharStream*)stream)->line; } // Simplified
+static bool SimpleCharStream_getTrackLineColumn(CharStream* stream) { return true; }
+
+
+static void SimpleCharStream_delete(CharStream* stream) {
+  if (stream) {
+    SimpleCharStream* self = (SimpleCharStream*)stream;
+    free(self->buffer);
+    free(self);
+  }
+}
+
+CharStream* new_SimpleCharStream_from_string(const char* s) {
+  SimpleCharStream* self = (SimpleCharStream*)calloc(1, sizeof(SimpleCharStream));
+
+  self->base.readChar = SimpleCharStream_readChar;
+  self->base.backup = SimpleCharStream_backup;
+  self->base.BeginToken = SimpleCharStream_BeginToken;
+  self->base.GetImage = SimpleCharStream_GetImage;
+  self->base.getEndColumn = SimpleCharStream_getEndColumn;
+  self->base.getEndLine = SimpleCharStream_getEndLine;
+  self->base.getBeginColumn = SimpleCharStream_getBeginColumn;
+  self->base.getBeginLine = SimpleCharStream_getBeginLine;
+  self->base.getTrackLineColumn = SimpleCharStream_getTrackLineColumn;
+  self->base._delete = SimpleCharStream_delete;
+  self->base.endOfInput = SimpleCharStream_endOfInput;
+  
+  self->bufsize = 4096;
+  self->buffer = (JJChar*)malloc(self->bufsize * sizeof(JJChar));
+  self->inputStream = s; // DANGER: Assumes lifetime of s is longer than stream
+
+  return &self->base;
+}

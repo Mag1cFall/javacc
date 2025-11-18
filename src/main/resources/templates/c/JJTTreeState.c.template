@@ -1,0 +1,118 @@
+#include "${parser_name}State.h"
+#include "Node.h"
+#include <string.h>
+#include <stdlib.h>
+
+void JJT${parser_name}State_clear(JJT${parser_name}State* self) {
+  while (self->sp > 0) {
+    Node_jjtClose(JJT${parser_name}State_popNode(self));
+  }
+}
+
+void JJT${parser_name}State_reset(JJT${parser_name}State* self) {
+  self->nodes.elements = NULL;
+  self->nodes.size = 0;
+  self->nodes.capacity = 0;
+  self->marks.elements = NULL;
+  self->marks.size = 0;
+  self->marks.capacity = 0;
+  self->sp = 0;
+  self->mk = 0;
+  self->node_created = false;
+}
+
+Node* JJT${parser_name}State_rootNode(JJT${parser_name}State* self) {
+  if (self->nodes.size == 0) {
+    return NULL;
+  }
+  return self->nodes.elements[0];
+}
+
+void JJT${parser_name}State_pushNode(JJT${parser_name}State* self, Node *n) {
+  if (self->nodes.size == self->nodes.capacity) {
+    int new_capacity = self->nodes.capacity == 0 ? 8 : self->nodes.capacity * 2;
+    self->nodes.elements = (Node**)realloc(self->nodes.elements, new_capacity * sizeof(Node*));
+    self->nodes.capacity = new_capacity;
+  }
+  self->nodes.elements[self->nodes.size++] = n;
+  self->sp++;
+}
+
+Node* JJT${parser_name}State_popNode(JJT${parser_name}State* self) {
+  if (--self->sp < self->mk) {
+    self->mk = self->marks.elements[--self->marks.size];
+  }
+  
+  Node* node = self->nodes.elements[--self->nodes.size];
+  return node;
+}
+
+Node* JJT${parser_name}State_peekNode(JJT${parser_name}State* self) {
+  if (self->nodes.size == 0) {
+    return NULL;
+  }
+  return self->nodes.elements[self->nodes.size - 1];
+}
+
+int JJT${parser_name}State_nodeArity(JJT${parser_name}State* self) {
+  return self->sp - self->mk;
+}
+
+void JJT${parser_name}State_openNodeScope(JJT${parser_name}State* self, Node *n) {
+  if (self->marks.size == self->marks.capacity) {
+    int new_capacity = self->marks.capacity == 0 ? 8 : self->marks.capacity * 2;
+    self->marks.elements = (int*)realloc(self->marks.elements, new_capacity * sizeof(int));
+    self->marks.capacity = new_capacity;
+  }
+  self->marks.elements[self->marks.size++] = self->mk;
+  self->mk = self->sp;
+  Node_jjtOpen(n);
+}
+
+void JJT${parser_name}State_closeNodeScope(JJT${parser_name}State* self, Node *n, int num) {
+  self->mk = self->marks.elements[--self->marks.size];
+  while (num-- > 0) {
+    Node *c = JJT${parser_name}State_popNode(self);
+    Node_jjtAddChild(n, c, n->jjtGetNumChildren(n));
+    for(int i = n->jjtGetNumChildren(n) - 1; i > 0; --i) {
+      n->jjtGetChild(n, i)->jjtSetChild(n->jjtGetChild(n, i-1), i);
+    }
+  }
+  Node_jjtClose(n);
+  JJT${parser_name}State_pushNode(self, n);
+  self->node_created = true;
+}
+
+void JJT${parser_name}State_closeNodeScopeEx(JJT${parser_name}State* self, Node *n, bool condition) {
+  if (condition) {
+    int a = JJT${parser_name}State_nodeArity(self);
+    self->mk = self->marks.elements[--self->marks.size];
+    while (a-- > 0) {
+      Node *c = JJT${parser_name}State_popNode(self);
+      Node_jjtAddChild(n, c, n->jjtGetNumChildren(n));
+      for(int i = n->jjtGetNumChildren(n) - 1; i > 0; --i) {
+        n->jjtGetChild(n,i)->jjtSetChild(n->jjtGetChild(n, i - 1), i);
+      }
+    }
+    Node_jjtClose(n);
+    JJT${parser_name}State_pushNode(self, n);
+    self->node_created = true;
+  } else {
+    self->mk = self->marks.elements[--self->marks.size];
+    self->node_created = false;
+  }
+}
+
+JJT${parser_name}State* new_JJT${parser_name}State() {
+  JJT${parser_name}State* state = (JJT${parser_name}State*)calloc(1, sizeof(JJT${parser_name}State));
+  JJT${parser_name}State_reset(state);
+  return state;
+}
+
+void delete_JJT${parser_name}State(JJT${parser_name}State* self) {
+  if (self) {
+    free(self->nodes.elements);
+    free(self->marks.elements);
+    free(self);
+  }
+}

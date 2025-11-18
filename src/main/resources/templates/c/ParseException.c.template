@@ -1,0 +1,15 @@
+#include "ParseException.h"
+#include <stdlib.h>
+#include <string.h>
+
+ParseException* new_ParseException() {
+  ParseException* e = (ParseException*)calloc(1, sizeof(ParseException));
+  return e;
+}
+
+void delete_ParseException(ParseException* e) {
+  if (e) {
+    JJString_delete(&e->message);
+    free(e);
+  }
+}

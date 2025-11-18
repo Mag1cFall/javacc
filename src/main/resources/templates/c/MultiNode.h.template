@@ -1,0 +1,19 @@
+#ifndef ${node_class}_H
+#define ${node_class}_H
+
+#include "Node.h"
+#include "${parser_name}.h"
+
+typedef struct ${node_class} {
+  Node base_Node;
+  Node *parent;
+  Node **children;
+  int children_size;
+  int id;
+  void *value;
+  ${parser_name} *parser;
+} ${node_class};
+
+${node_class}* new_${node_class}(int id);
+
+#endif

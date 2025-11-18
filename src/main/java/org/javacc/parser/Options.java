@@ -122,15 +122,20 @@ public class Options {
 	public static final String USEROPTION__CPP_TOKEN_INCLUDE = "TOKEN_INCLUDE";
 	public static final String USEROPTION__CPP_PARSER_INCLUDE = "PARSER_INCLUDE";
 	public static final String USEROPTION__CPP_TOKEN_MANAGER_INCLUDE = "TOKEN_MANAGER_INCLUDE";
+
+	public static final String USEROPTION__C_TOKEN_INCLUDE = "C_TOKEN_INCLUDE";
+	public static final String USEROPTION__C_PARSER_INCLUDE = "C_PARSER_INCLUDE";
+	public static final String USEROPTION__C_TOKEN_MANAGER_INCLUDE = "C_TOKEN_MANAGER_INCLUDE";
 	/**
 	 * Various constants relating to possible values for certain options
 	 */
 
 	public static final String OUTPUT_LANGUAGE__CPP = "c++";
+	public static final String OUTPUT_LANGUAGE__C = "c";
 	public static final String OUTPUT_LANGUAGE__JAVA = "java";
 
 	public static enum Language {
-		java, cpp;
+		java, cpp, c;
 	}
 
 	public static Language language = Language.java;
@@ -205,13 +210,16 @@ public class Options {
 		temp.add(new OptionInfo(USEROPTION__JAVA_TEMPLATE_TYPE, OptionType.STRING, JAVA_TEMPLATE_TYPE_CLASSIC));
 		temp.add(new OptionInfo(USEROPTION__CPP_NAMESPACE, OptionType.STRING, ""));
 		
-		temp.add(new OptionInfo(USEROPTION__TOKEN_SUPER_CLASS, OptionType.STRING, null));
-		temp.add(new OptionInfo(USEROPTION__PARSER_SUPER_CLASS, OptionType.STRING, null));
-		temp.add(new OptionInfo(USEROPTION__TOKEN_MANAGER_SUPER_CLASS, OptionType.STRING, null));
+		temp.add(new OptionInfo(USEROPTION__TOKEN_SUPER_CLASS, OptionType.STRING, ""));
+		temp.add(new OptionInfo(USEROPTION__PARSER_SUPER_CLASS, OptionType.STRING, ""));
+		temp.add(new OptionInfo(USEROPTION__TOKEN_MANAGER_SUPER_CLASS, OptionType.STRING, ""));
 
 		temp.add(new OptionInfo(USEROPTION__CPP_TOKEN_INCLUDE, OptionType.STRING, ""));
 		temp.add(new OptionInfo(USEROPTION__CPP_PARSER_INCLUDE, OptionType.STRING, ""));
 		temp.add(new OptionInfo(USEROPTION__CPP_TOKEN_MANAGER_INCLUDE, OptionType.STRING, ""));
+		temp.add(new OptionInfo(USEROPTION__C_TOKEN_INCLUDE, OptionType.STRING, ""));
+		temp.add(new OptionInfo(USEROPTION__C_PARSER_INCLUDE, OptionType.STRING, ""));
+		temp.add(new OptionInfo(USEROPTION__C_TOKEN_MANAGER_INCLUDE, OptionType.STRING, ""));
 
 		temp.add(new OptionInfo(USEROPTION__CPP_IGNORE_ACTIONS, OptionType.BOOLEAN, Boolean.FALSE));
 		temp.add(new OptionInfo(USEROPTION__CPP_STOP_ON_FIRST_ERROR, OptionType.BOOLEAN, Boolean.FALSE));
@@ -440,6 +448,8 @@ public class Options {
 				language = Language.java;
 			else if (isOutputLanguageCpp())
 				language = Language.cpp;
+			else if (isOutputLanguageC())
+				language = Language.c;
 		} else
 
 		if (nameUpperCase.equalsIgnoreCase(USEROPTION__CPP_NAMESPACE)) {
@@ -555,6 +565,18 @@ public class Options {
 		cmdLineSetting.add(name);
 		if (name.equalsIgnoreCase(USEROPTION__CPP_NAMESPACE)) {
 			processCPPNamespaceOption((String) Val);
+		}
+		if (name.equalsIgnoreCase(USEROPTION__OUTPUT_LANGUAGE)) {
+			String outputLanguage = (String)Val;
+			if (isValidOutputLanguage(outputLanguage)) {
+				if (outputLanguage.equalsIgnoreCase(OUTPUT_LANGUAGE__JAVA)) {
+					language = Language.java;
+				} else if (outputLanguage.equalsIgnoreCase(OUTPUT_LANGUAGE__CPP)) {
+					language = Language.cpp;
+				} else if (outputLanguage.equalsIgnoreCase(OUTPUT_LANGUAGE__C)) {
+					language = Language.c;
+				}
+			}
 		}
 	}
 
@@ -920,7 +942,7 @@ public class Options {
 		if (isOutputLanguageJava() && getGenerateStringBuilder()) {
 			return getGenerateStringBuilder() ? "StringBuilder"
 					: "StringBuffer";
-		} else if (getOutputLanguage().equals(OUTPUT_LANGUAGE__CPP)) {
+		} else if (getOutputLanguage().equals(OUTPUT_LANGUAGE__CPP) || isOutputLanguageC()) {
 			return "StringBuffer";
 		} else {
 			throw new RuntimeException(
@@ -928,6 +950,7 @@ public class Options {
 							+ getOutputLanguage());
 		}
 	}
+
 
 	private static final Set<String> supportedJavaTemplateTypes = new HashSet<String>();
 	static {
@@ -939,6 +962,7 @@ public class Options {
 	static {
 		supportedLanguages.add(OUTPUT_LANGUAGE__JAVA);
 		supportedLanguages.add(OUTPUT_LANGUAGE__CPP);
+		supportedLanguages.add(OUTPUT_LANGUAGE__C);
 	}
 
 	public static boolean isValidOutputLanguage(String language) {
@@ -991,7 +1015,7 @@ public class Options {
 		// processing into a single Enum class
 		if (isOutputLanguageJava()) {
 			return "long";
-		} else if (getOutputLanguage().equals(OUTPUT_LANGUAGE__CPP)) {
+		} else if (isOutputLanguageCpp() || isOutputLanguageC()) {
 			return "unsigned long long";
 		} else {
 			throw new RuntimeException("Language type not fully supported : "
@@ -1004,7 +1028,7 @@ public class Options {
 		// processing into a single Enum class
 		if (isOutputLanguageJava()) {
 			return "boolean";
-		} else if (getOutputLanguage().equals(OUTPUT_LANGUAGE__CPP)) {
+		} else if (isOutputLanguageCpp() || isOutputLanguageC()) {
 			return "bool";
 		} else {
 			throw new RuntimeException("Language type not fully supported : "
@@ -1018,6 +1042,10 @@ public class Options {
 
 	public static boolean isOutputLanguageCpp() {
 		return getOutputLanguage().equalsIgnoreCase(OUTPUT_LANGUAGE__CPP);
+	}
+
+	public static boolean isOutputLanguageC() {
+		return getOutputLanguage().equalsIgnoreCase(OUTPUT_LANGUAGE__C);
 	}
 
 	public static boolean isTokenManagerRequiresParserAccess() {

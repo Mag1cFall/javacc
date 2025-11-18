@@ -1,0 +1,25 @@
+#ifndef TOKEN_MANAGER_H
+#define TOKEN_MANAGER_H
+
+#include "JavaCC.h"
+#include "Token.h"
+
+#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+#else
+#endif
+
+struct TokenManager;
+
+typedef struct TokenManager {
+  Token* (*getNextToken)(struct TokenManager* self);
+  void (*_delete)(struct TokenManager* self);
+  void* app_data;
+} TokenManager;
+
+#define delete_TokenManager(tm) do { if (tm && (tm)->_delete) (tm)->_delete(tm); } while(0)
+
+#if ${SUPPORT_CLASS_VISIBILITY_PUBLIC}
+#else
+#endif
+
+#endif

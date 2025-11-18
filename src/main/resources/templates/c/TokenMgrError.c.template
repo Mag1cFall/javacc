@@ -1,0 +1,34 @@
+#include "TokenMgrError.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+TokenMgrError* new_TokenMgrError() {
+  TokenMgrError* err = (TokenMgrError*)calloc(1, sizeof(TokenMgrError));
+  return err;
+}
+
+void delete_TokenMgrError(TokenMgrError* err) {
+  if (err) {
+    JJString_delete(&err->message);
+    free(err);
+  }
+}
+
+void TokenMgrError_init(TokenMgrError *err, const char* mes, int reason) {
+  JJString_from_const(&err->message, mes);
+  err->errorCode = reason;
+}
+
+void TokenMgrError_init_full(TokenMgrError *err, bool EOFSeen, int lexState, int errorLine, int errorColumn, const char* errorAfter, int curChar, int reason) {
+  char buff[2048];
+  sprintf(buff, "Lexical error at line %d, column %d.  Encountered: %c (%d), after : \"%s\"", 
+      errorLine, errorColumn, curChar, curChar, errorAfter);
+  
+  JJString_from_const(&err->message, buff);
+  err->errorCode = reason;
+}
+
+const char* TokenMgrError_getMessage(TokenMgrError* err) {
+  return err->message.str;
+}

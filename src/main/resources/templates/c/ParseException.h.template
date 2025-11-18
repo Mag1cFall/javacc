@@ -1,0 +1,15 @@
+#ifndef PARSE_EXCEPTION_H
+#define PARSE_EXCEPTION_H
+
+#include "JavaCC.h"
+#include "Token.h"
+
+typedef struct ParseException {
+  JJString message;
+  Token* currentToken;
+} ParseException;
+
+ParseException* new_ParseException();
+void delete_ParseException(ParseException* e);
+
+#endif

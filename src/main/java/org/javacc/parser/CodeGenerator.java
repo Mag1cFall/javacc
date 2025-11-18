@@ -16,7 +16,7 @@ public class CodeGenerator {
   protected StringBuffer staticsBuffer = new StringBuffer();
   protected StringBuffer outputBuffer = mainBuffer;
 
-  public void genStringLiteralArrayCPP(String varName, String[] arr) {
+  public void genStringLiteralArray(String varName, String[] arr) {
     // First generate char array vars
     for (int i = 0; i < arr.length; i++) {
       genCodeLine("static const JJChar " + varName + "_arr_" + i + "[] = ");
@@ -30,6 +30,7 @@ public class CodeGenerator {
     }
     genCodeLine("};");
   }
+  
   public void genStringLiteralInCPP(String s) {
     // String literals in CPP become char arrays
     outputBuffer.append("{");
@@ -51,7 +52,7 @@ public class CodeGenerator {
 
   public void saveOutput(String fileName) {
     if (!isJavaLanguage()) {
-      String incfilePath = fileName.replace(".cc", ".h");
+      String incfilePath = fileName.replace(".cc", ".h").replace(".c", ".h");
       String incfileName = new File(incfilePath).getName();
       includeBuffer.insert(0, "#define " + incfileName.replace('.', '_').toUpperCase() + "\n");
       includeBuffer.insert(0, "#ifndef " + incfileName.replace('.', '_').toUpperCase() + "\n");
@@ -242,7 +243,7 @@ public class CodeGenerator {
   public void genAnnotation(String ann) {
     if (Options.isOutputLanguageJava()) {
       genCode("@" + ann);
-    } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) { // For now, it's only C++ for now
+    } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP) || Options.isOutputLanguageC()) { // For now, it's only C++ for now
       genCode( "/*" + ann + "*/");
     } else {
     	throw new RuntimeException("Unknown language : " + Options.getOutputLanguage());
@@ -406,7 +407,6 @@ public class CodeGenerator {
     OutputFileGenerator gen = new OutputFileGenerator(name, options);
     StringWriter sw = new StringWriter();
     gen.generate(new PrintWriter(sw));
-    sw.close();
     genCode(sw.toString());
   }
 }

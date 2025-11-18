@@ -2732,6 +2732,55 @@ public class NfaState
       codeGenerator.switchToMainFile();
    }
 
+   static void PrintBoilerPlateC(CodeGenerator codeGenerator)
+   {
+      codeGenerator.switchToIncludeFile();
+      codeGenerator.genCodeLine("#define jjCheckNAdd(state) \\");
+      codeGenerator.genCodeLine("{ \\");
+      codeGenerator.genCodeLine("   if (jjrounds[state] != jjround) \\");
+      codeGenerator.genCodeLine("   { \\");
+      codeGenerator.genCodeLine("      jjstateSet[jjnewStateCnt++] = state; \\");
+      codeGenerator.genCodeLine("      jjrounds[state] = jjround; \\");
+      codeGenerator.genCodeLine("   } \\");
+      codeGenerator.genCodeLine("}");
+      codeGenerator.genCodeLine("");
+
+      codeGenerator.genCodeLine("#define jjAddStates(start, end) \\");
+      codeGenerator.genCodeLine("{ \\");
+      codeGenerator.genCodeLine("   for (int x = start; x <= end; x++) { \\");
+      codeGenerator.genCodeLine("      jjstateSet[jjnewStateCnt++] = jjnextStates[x]; \\");
+      codeGenerator.genCodeLine("   } \\");
+      codeGenerator.genCodeLine("}");
+      codeGenerator.genCodeLine("");
+
+      codeGenerator.genCodeLine("#define jjCheckNAddTwoStates(state1, state2) \\");
+      codeGenerator.genCodeLine("{ \\");
+      codeGenerator.genCodeLine("   jjCheckNAdd(state1); \\");
+      codeGenerator.genCodeLine("   jjCheckNAdd(state2); \\");
+      codeGenerator.genCodeLine("}");
+      codeGenerator.genCodeLine("");
+
+      if(jjCheckNAddStatesDualNeeded) {
+        codeGenerator.genCodeLine("#define jjCheckNAddStates(start, end) \\");
+        codeGenerator.genCodeLine("{ \\");
+        codeGenerator.genCodeLine("   for (int x = start; x <= end; x++) { \\");
+        codeGenerator.genCodeLine("      jjCheckNAdd(jjnextStates[x]); \\");
+        codeGenerator.genCodeLine("   } \\");
+        codeGenerator.genCodeLine("}");
+        codeGenerator.genCodeLine("");
+      }
+
+      if(jjCheckNAddStatesUnaryNeeded) {
+        codeGenerator.genCodeLine("#define jjCheckNAddStates(start) \\");
+        codeGenerator.genCodeLine("{ \\");
+        codeGenerator.genCodeLine("   jjCheckNAdd(jjnextStates[start]); \\");
+        codeGenerator.genCodeLine("   jjCheckNAdd(jjnextStates[start + 1]); \\");
+        codeGenerator.genCodeLine("}");
+        codeGenerator.genCodeLine("");
+      }
+      codeGenerator.switchToMainFile();
+   }
+   
    private static void FindStatesWithNoBreak()
    {
       Hashtable printed = new Hashtable();

@@ -1,0 +1,21 @@
+#ifndef ERROR_HANDLER_H
+#define ERROR_HANDLER_H
+
+#include "JavaCC.h"
+#include <stdbool.h>
+
+struct ErrorHandler;
+
+typedef struct ErrorHandler {
+  void (*handleUnexpectedToken)(struct ErrorHandler* self, int expectedToken, JJString expectedTokenImage, void* a, void* b);
+  void (*lexicalError)(struct ErrorHandler* self, bool EOFSeen, int lexState, int errorLine, int errorColumn, JJString errorAfter, int curChar, void* tokenManager);
+  void (*handleOtherError)(struct ErrorHandler* self, JJString message, void* b);
+  void (*_delete)(struct ErrorHandler* self);
+} ErrorHandler;
+
+#define delete_ErrorHandler(eh) do { if (eh && (eh)->_delete) (eh)->_delete(eh); } while(0)
+
+// A default implementation
+ErrorHandler* newErrorHandler();
+
+#endif

@@ -148,7 +148,7 @@ private static void printOptionInfo(OptionType filter, OptionInfo optionInfo, in
 	  }
 }
 
-/**
+  /**
    * A main program that exercises the parser.
    */
   public static void main(String args[]) throws Exception {
@@ -167,7 +167,7 @@ private static void printOptionInfo(OptionType filter, OptionInfo optionInfo, in
     	System.out.println(Version.versionNumber);
         return 0;
     }
-    
+
     // Initialize all static state
     reInitAll();
 
@@ -229,7 +229,8 @@ private static void printOptionInfo(OptionType filter, OptionInfo optionInfo, in
       String outputLanguage = Options.getOutputLanguage();
       // TODO :: CBA --  Require Unification of output language specific processing into a single Enum class
   	  boolean isJavaOutput = Options.isOutputLanguageJava();
-  	  boolean isCPPOutput = outputLanguage.equals(Options.OUTPUT_LANGUAGE__CPP);
+  	  boolean isCPPOutput = outputLanguage.equalsIgnoreCase(Options.OUTPUT_LANGUAGE__CPP);
+  	  boolean isCOutput = outputLanguage.equalsIgnoreCase(Options.OUTPUT_LANGUAGE__C);
 
   	  // 2013/07/22 Java Modern is a
   	  boolean isJavaModern = isJavaOutput && Options.getJavaTemplateType().equals(Options.JAVA_TEMPLATE_TYPE_MODERN);
@@ -238,6 +239,8 @@ private static void printOptionInfo(OptionType filter, OptionInfo optionInfo, in
         lg = new LexGen();
       } else if (isCPPOutput) {
         lg = new LexGenCPP();
+      } else if (isCOutput) {
+        lg = new LexGenC();
       } else {
       	return unhandledLanguageExit(outputLanguage);
       }
@@ -258,24 +261,33 @@ private static void printOptionInfo(OptionType filter, OptionInfo optionInfo, in
 	  // and have the enumerations describe the deltas between the outputs. The current approach means that per-langauge configuration is distributed
 	  // and small changes between targets does not benefit from inheritance.
 		if (isJavaOutput) {
-			if (isBuildParser) {
-				new ParseGen().start(isJavaModern);
-			}
+      if (isBuildParser) {
+        new ParseGen().start(isJavaModern);
+      }
 
-			// Must always create the lexer object even if not building a parser.
-			new LexGen().start();
+      // Must always create the lexer object even if not building a parser.
+      lg.start();
 
-			Options.setStringOption(Options.NONUSER_OPTION__PARSER_NAME, JavaCCGlobals.cu_name);
-			OtherFilesGen.start(isJavaModern);
+      Options.setStringOption(Options.NONUSER_OPTION__PARSER_NAME, JavaCCGlobals.cu_name);
+      OtherFilesGen.start(isJavaModern);
 		} else if (isCPPOutput) { // C++ for now
 			if (isBuildParser) {
 				new ParseGenCPP().start();
 			}
-			if (isBuildParser) {
+			if (Options.getBuildTokenManager()) {
 				new LexGenCPP().start();
 			}
 			Options.setStringOption(Options.NONUSER_OPTION__PARSER_NAME, JavaCCGlobals.cu_name);
 			OtherFilesGenCPP.start();
+		} else if (isCOutput) { // C for now
+			if (isBuildParser) {
+				new ParseGenC().start();
+			}
+			if (Options.getBuildTokenManager()) {
+				new LexGenC().start();
+			}
+			Options.setStringOption(Options.NONUSER_OPTION__PARSER_NAME, JavaCCGlobals.cu_name);
+			OtherFilesGenC.start();
 		} else {
 			unhandledLanguageExit(outputLanguage);
 		}

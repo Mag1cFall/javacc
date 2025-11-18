@@ -1,0 +1,20 @@
+static void jjCheckNAdd(int state) {
+  if (jjrounds[state] != jjround) {
+    jjstateSet[jjnewStateCnt++] = state;
+    jjrounds[state] = jjround;
+  }
+}
+
+static void jjAddStates(int start, int end) {
+  do {
+    jjstateSet[jjnewStateCnt++] = jjnextStates[start];
+  } while (start++ != end);
+}
+
+static void jjCheckNAddTwoStates(int state1, int state2) {
+  jjCheckNAdd(state1);
+  jjCheckNAdd(state2);
+}
+
+#define jjCheckNAddStates(start, end)
+#define jjMoveException       // In C, we'd typically return an error code or use longjmp
