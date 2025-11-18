@@ -896,6 +896,7 @@ public class LexGenC extends LexGen implements JavaCCParserConstants //CodeGener
           "self->input_stream->getEndLine(self->input_stream), self->input_stream->getEndColumn(self->input_stream));");
       }
 
+      genCodeLine(prefix + "self->curChar = curChar;");
       genCodeLine(prefix + "curPos = jjMoveStringLiteralDfa0_" + i + "(self, curChar);");
 
       if (canMatchAnyChar[i] != -1)
