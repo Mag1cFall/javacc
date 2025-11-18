@@ -3066,8 +3066,16 @@ public class NfaState
       }
       if (Main.lg.mixed[Main.lg.lexStateIndex])
          codeGenerator.genCodeLine("         break;");
-      else
+      else {
+         if (!codeGenerator.isJavaLanguage()) {
+            codeGenerator.genCodeLine("         self->curChar = curChar;");
+            codeGenerator.genCodeLine("         self->jjnewStateCnt = jjnewStateCnt;");
+            codeGenerator.genCodeLine("         self->jjround = jjround;");
+            codeGenerator.genCodeLine("         self->jjmatchedKind = jjmatchedKind;");
+            codeGenerator.genCodeLine("         self->jjmatchedPos = jjmatchedPos;");
+         }
          codeGenerator.genCodeLine("         return curPos;");
+      }
 
       if (Options.getDebugTokenManager()) {
         if (codeGenerator.isJavaLanguage()) {
@@ -3084,7 +3092,14 @@ public class NfaState
         if (Main.lg.mixed[Main.lg.lexStateIndex]) {
           codeGenerator.genCodeLine("      if (self->input_stream->endOfInput(self->input_stream)) { break; }");
         } else {
-          codeGenerator.genCodeLine("      if (self->input_stream->endOfInput(self->input_stream)) { return curPos; }");
+          codeGenerator.genCodeLine("      if (self->input_stream->endOfInput(self->input_stream)) {");
+          codeGenerator.genCodeLine("         self->curChar = curChar;");
+          codeGenerator.genCodeLine("         self->jjnewStateCnt = jjnewStateCnt;");
+          codeGenerator.genCodeLine("         self->jjround = jjround;");
+          codeGenerator.genCodeLine("         self->jjmatchedKind = jjmatchedKind;");
+          codeGenerator.genCodeLine("         self->jjmatchedPos = jjmatchedPos;");
+          codeGenerator.genCodeLine("         return curPos;");
+          codeGenerator.genCodeLine("      }");
         }
         codeGenerator.genCodeLine("      curChar = self->input_stream->readChar(self->input_stream);");
       }

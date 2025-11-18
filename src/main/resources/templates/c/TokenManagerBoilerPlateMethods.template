@@ -14,8 +14,21 @@ void ${tokMgrClassName}_ReInitRounds(${tokMgrClassName}* self) {
     self->jjstateSet[i] = 0;
 }
 
+static Token* ${tokMgrClassName}_getNextToken_wrapper(TokenManager* tm) {
+    return ${tokMgrClassName}_getNextToken((${tokMgrClassName}*)tm);
+}
+
+static void ${tokMgrClassName}_delete_wrapper(TokenManager* tm) {
+    delete${tokMgrClassName}((${tokMgrClassName}*)tm);
+}
+
 ${tokMgrClassName}* new${tokMgrClassName}(JAVACC_CHARSTREAM *stream) {
   ${tokMgrClassName}* self = (${tokMgrClassName}*)calloc(1, sizeof(${tokMgrClassName}));
+  
+  self->base.getNextToken = ${tokMgrClassName}_getNextToken_wrapper;
+  self->base._delete = ${tokMgrClassName}_delete_wrapper;
+  self->base.app_data = NULL;
+  
   self->debugStream = stdout;
   self->jjstateSet = (int*)calloc(${lexStateNameLength} * 2, sizeof(int));
   self->jjrounds = (int*)calloc(${lexStateNameLength}, sizeof(int));
@@ -74,5 +87,4 @@ void lexicalError(int EOFSeen, int lexState, int errorLine, int errorColumn, JJS
     } else {
         fprintf(stderr, "Encountered: '%c' (%d) after : \"%.*s\"\n", curChar, (int)curChar, (int)errorAfter.len, errorAfter.str);
     }
-    exit(1);
 }

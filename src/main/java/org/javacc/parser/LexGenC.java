@@ -85,11 +85,10 @@ public class LexGenC extends LexGen implements JavaCCParserConstants //CodeGener
 
     switchToIncludeFile();
     genCodeLine("typedef struct " + tokMgrClassName + " {");
-    genCodeLine("  // The parser instance for which this token manager is created.");
+    genCodeLine("  TokenManager base;");
     if (Options.getTokenManagerUsesParser()) {
         genCodeLine("  void* parser;");
     }
-    genCodeLine("  /** The stream to read from. */");
     genCodeLine("  CharStream *input_stream;");
     genCodeLine("  FILE* debugStream;");
 
@@ -515,9 +514,27 @@ public class LexGenC extends LexGen implements JavaCCParserConstants //CodeGener
     genCodeLine("}");
     genCodeLine("");
     
+    genCodeLine("static Token* " + tokMgrClassName + "_getNextToken_wrapper(TokenManager* tm) {");
+    genCodeLine("    return " + tokMgrClassName + "_getNextToken((" + tokMgrClassName + "*)tm);");
+    genCodeLine("}");
+    genCodeLine("");
+    genCodeLine("static void " + tokMgrClassName + "_delete_wrapper(TokenManager* tm) {");
+    genCodeLine("    " + tokMgrClassName + "* self = (" + tokMgrClassName + "*)tm;");
+    genCodeLine("    if (self) {");
+    genCodeLine("        free(self->jjstateSet);");
+    genCodeLine("        free(self->jjrounds);");
+    genCodeLine("        free(self);");
+    genCodeLine("    }");
+    genCodeLine("}");
+    genCodeLine("");
     genCodeLine(tokMgrClassName + "* new" + tokMgrClassName + "(CharStream* stream) {");
     genCodeLine("    " + tokMgrClassName + "* self = (" + tokMgrClassName + "*)malloc(sizeof(" + tokMgrClassName + "));");
     genCodeLine("    if (!self) return NULL;");
+    genCodeLine("    ");
+    genCodeLine("    self->base.getNextToken = " + tokMgrClassName + "_getNextToken_wrapper;");
+    genCodeLine("    self->base._delete = " + tokMgrClassName + "_delete_wrapper;");
+    genCodeLine("    self->base.app_data = NULL;");
+    genCodeLine("    ");
     genCodeLine("    self->input_stream = stream;");
     genCodeLine("    self->curLexState = 0;");
     genCodeLine("    self->jjnewStateCnt = 0;");
