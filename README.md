@@ -1,3 +1,37 @@
+## 编译技术作业2
+在IDEA里运行「maven - lifecycle - clean & package」
+
+如果是原版源码，可以原生支持C++代码生成，运行以下指令尝试：
+```
+java -cp target/javacc-7.0.14-SNAPSHOT.jar org.javacc.parser.Main -OUTPUT_LANGUAGE=c++ examples/JJTreeExamples/cpp/eg1.jjt
+```
+
+然后运行例子，这个例子生成了C语言代码。
+```
+java -cp target/javacc-7.0.14-SNAPSHOT.jar org.javacc.parser.Main -OUTPUT_LANGUAGE=C C_Test.jj
+```
+输出内容：
+```
+PS ~\javacc> java -cp target/javacc-7.0.14-SNAPSHOT.jar org.javacc.parser.Main -OUTPUT_LANGUAGE=C C_Test.jj
+Java Compiler Compiler Version 7.0.14 (Parser Generator)
+(type "javacc" with no arguments for help)
+Reading from file C_Test.jj . . .
+File "CharStream.c" does not exist.  Will create one.
+File "Token.h" is being rebuilt.
+File "Token.c" does not exist.  Will create one.
+File "TokenManager.h" is being rebuilt.
+File "TokenMgrError.h" is being rebuilt.
+File "TokenMgrError.c" does not exist.  Will create one.
+File "ParseException.h" is being rebuilt.
+File "ParseException.c" does not exist.  Will create one.
+File "ErrorHandler.h" is being rebuilt.
+Parser generated successfully.
+```
+这些C代码文件会输出到根目录下，可以打开查看。
+
+
+***
+
 # JavaCC
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.java.dev.javacc/javacc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.java.dev.javacc/javacc)
