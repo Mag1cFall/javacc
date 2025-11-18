@@ -165,10 +165,11 @@ public class CodeGenerator {
     for (; ccol < t.beginColumn; ccol++) {
       retval += " ";
     }
-    if (t.kind == JavaCCParserConstants.STRING_LITERAL ||
-        t.kind == JavaCCParserConstants.CHARACTER_LITERAL)
-       retval += addUnicodeEscapes(t.image);
-    else
+    if ((t.kind == JavaCCParserConstants.STRING_LITERAL ||
+        t.kind == JavaCCParserConstants.CHARACTER_LITERAL) &&
+        Options.isOutputLanguageJava()) {
+      retval += addUnicodeEscapes(t.image);
+    } else
        retval += t.image;
     cline = t.endLine;
     ccol = t.endColumn+1;
