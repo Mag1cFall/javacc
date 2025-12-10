@@ -60,9 +60,47 @@ DEBUG: Creating CharStream from input: 456789
 DEBUG: CharStream created successfully
 DEBUG: TokenManager created successfully
 DEBUG: Parser created, calling parse()
+Parsed a number.
+DEBUG: parse() returned, hasError=0
+Parsing completed successfully.
 ```
 
-***
+---
+
+## C语言生成器实现说明
+
+### 新增文件
+
+**Java源码** (`src/main/java/org/javacc/parser/`):
+- `LexGenC.java` - C语言词法分析器生成器
+- `ParseGenC.java` - C语言语法解析器生成器  
+- `CFiles.java` - C语言运行时文件生成器
+- `OtherFilesGenC.java` - C语言常量文件生成器
+
+**C语言模板** (`src/main/resources/templates/c/`):
+- 29个模板文件，包括`CharStream.h/c`、`Token.h/c`、`TokenManager.h`等
+
+### 主要修改
+
+- `Options.java` - 添加`OUTPUT_LANGUAGE__C`常量和`isOutputLanguageC()`方法
+- `Main.java` - 添加C语言输出路径分支
+- `NfaState.java` - 适配C语言的`self`参数传递
+- `RStringLiteral.java` - 部分C语言支持
+
+### 设计特点
+
+1. **面向对象C语言风格** - 使用`struct`+函数指针模拟类，`self`指针模拟`this`
+2. **手动内存管理** - 使用`calloc`/`free`
+3. **模板驱动** - 复用JavaCC的模板机制生成C代码
+
+### 已知限制
+
+当前实现专注于核心功能，以下高级特性尚未完全支持：
+- SKIP/MORE规则
+- 字符串字面量Token（如`"+"`）
+- 多词法状态
+
+---
 
 # JavaCC
 
