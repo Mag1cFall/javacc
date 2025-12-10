@@ -568,10 +568,15 @@ public class RStringLiteral extends RegularExpression {
                   "\"Current character : \" + " + Options.getTokenMgrErrorClass() +
                   ".addEscapes(String.valueOf(curChar)) + \" (\" + (int)curChar + \") " +
                   "at line \" + input_stream.getEndLine() + \" column \" + input_stream.getEndColumn());");
-         } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+         } else if (Options.isOutputLanguageCpp()) {
             codeGenerator.genCodeLine("   fprintf(debugStream, " +
                   "\"<%s>Current character : %c(%d) at line %d column %d\\n\"," +
                   "addUnicodeEscapes(lexStateNames[curLexState]).c_str(), curChar, (int)curChar, " +
+                  "input_stream->getEndLine(), input_stream->getEndColumn());");
+         } else if (Options.isOutputLanguageC()) {
+            codeGenerator.genCodeLine("   fprintf(debugStream, " +
+                  "\"Current character : %c(%d) at line %d column %d\\n\"," +
+                  "curChar, (int)curChar, " +
                   "input_stream->getEndLine(), input_stream->getEndColumn());");
          } else {
             throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
@@ -615,11 +620,17 @@ public class RStringLiteral extends RegularExpression {
             codeGenerator
                   .genCodeLine("   debugStream.println(\"   Currently matched the first \" + (jjmatchedPos + 1) + " +
                         "\" characters as a \" + tokenImage[jjmatchedKind] + \" token.\");");
-         } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+         } else if (Options.isOutputLanguageCpp()) {
             codeGenerator
                   .genCodeLine("   fprintf(debugStream, \"   No more string literal token matches are possible.\");");
             codeGenerator.genCodeLine(
                   "   fprintf(debugStream, \"   Currently matched the first %d characters as a \\\"%s\\\" token.\\n\",  (jjmatchedPos + 1),  addUnicodeEscapes(tokenImage[jjmatchedKind]).c_str());");
+         } else if (Options.isOutputLanguageC()) {
+            codeGenerator
+                  .genCodeLine(
+                        "   fprintf(debugStream, \"   No more string literal token matches are possible.\\n\");");
+            codeGenerator.genCodeLine(
+                  "   fprintf(debugStream, \"   Currently matched the first %d characters as a \\\"token kind %d\\\" token.\\n\",  (jjmatchedPos + 1),  jjmatchedKind);");
          } else {
             throw new RuntimeException("Output language type not fully implemented : " + Options.getOutputLanguage());
          }
@@ -840,7 +851,7 @@ public class RStringLiteral extends RegularExpression {
                // into a single Enum class
                if (codeGenerator.isJavaLanguage()) {
                   codeGenerator.genCodeLine(" + \" } \");");
-               } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+               } else if (Options.isOutputLanguageCpp() || Options.isOutputLanguageC()) {
                   fmt.append("}\\n");
                   codeGenerator.genCodeLine("    fprintf(debugStream, \"" + fmt + "\"," + args + ");");
                } else {
@@ -862,7 +873,12 @@ public class RStringLiteral extends RegularExpression {
             }
 
             if (!Main.lg.mixed[Main.lg.lexStateIndex] && NfaState.generatedStates != 0) {
-               codeGenerator.genCode("      jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(" + (i - 1) + ", ");
+               if (codeGenerator.isJavaLanguage()) {
+                  codeGenerator.genCode("      jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(" + (i - 1) + ", ");
+               } else {
+                  codeGenerator
+                        .genCode("      jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(self, " + (i - 1) + ", ");
+               }
                for (k = 0; k < maxLongsReqd - 1; k++) {
                   if (i <= maxLenForActive[k])
                      codeGenerator.genCode("active" + k + ", ");
@@ -918,10 +934,15 @@ public class RStringLiteral extends RegularExpression {
                      "\"Current character : \" + " + Options.getTokenMgrErrorClass() +
                      ".addEscapes(String.valueOf(curChar)) + \" (\" + (int)curChar + \") " +
                      "at line \" + input_stream.getEndLine() + \" column \" + input_stream.getEndColumn());");
-            } else if (Options.getOutputLanguage().equals(Options.OUTPUT_LANGUAGE__CPP)) {
+            } else if (Options.isOutputLanguageCpp()) {
                codeGenerator.genCodeLine("   fprintf(debugStream, " +
                      "\"<%s>Current character : %c(%d) at line %d column %d\\n\"," +
                      "addUnicodeEscapes(lexStateNames[curLexState]).c_str(), curChar, (int)curChar, " +
+                     "input_stream->getEndLine(), input_stream->getEndColumn());");
+            } else if (Options.isOutputLanguageC()) {
+               codeGenerator.genCodeLine("   fprintf(debugStream, " +
+                     "\"Current character : %c(%d) at line %d column %d\\n\"," +
+                     "curChar, (int)curChar, " +
                      "input_stream->getEndLine(), input_stream->getEndColumn());");
             } else {
                throw new RuntimeException(
@@ -1049,9 +1070,15 @@ public class RStringLiteral extends RegularExpression {
                                     Main.lg.lexStateSuffix + "(self, " + i +
                                     ", " + kindToPrint + ", " + stateSetName + ");");
                            }
-                        } else
-                           codeGenerator
-                                 .genCodeLine(prefix + "return jjStopAtPos" + "(" + i + ", " + kindToPrint + ");");
+                        } else {
+                           if (codeGenerator.isJavaLanguage()) {
+                              codeGenerator
+                                    .genCodeLine(prefix + "return jjStopAtPos" + "(" + i + ", " + kindToPrint + ");");
+                           } else {
+                              codeGenerator.genCodeLine(
+                                    prefix + "return jjStopAtPos" + "(self, " + i + ", " + kindToPrint + ");");
+                           }
+                        }
                      } else {
                         if ((Main.lg.initMatch[Main.lg.lexStateIndex] != 0 &&
                               Main.lg.initMatch[Main.lg.lexStateIndex] != Integer.MAX_VALUE) ||
@@ -1518,8 +1545,13 @@ public class RStringLiteral extends RegularExpression {
          return;
       }
 
-      codeGenerator.genCode("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(" +
-            "jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(pos, ");
+      if (codeGenerator.isJavaLanguage()) {
+         codeGenerator.genCode("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(" +
+               "jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(pos, ");
+      } else {
+         codeGenerator.genCode("   return jjMoveNfa" + Main.lg.lexStateSuffix + "(self, " +
+               "jjStopStringLiteralDfa" + Main.lg.lexStateSuffix + "(self, pos, ");
+      }
       for (i = 0; i < maxKindsReqd - 1; i++)
          codeGenerator.genCode("active" + i + ", ");
       codeGenerator.genCode("active" + i + ")");

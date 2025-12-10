@@ -1,0 +1,25 @@
+options {
+  STATIC = false;
+  OUTPUT_LANGUAGE = "C";
+}
+
+PARSER_BEGIN(C_Test2)
+PARSER_END(C_Test2)
+
+SKIP :
+{
+  " " | "\t" | "\n" | "\r"
+}
+
+TOKEN :
+{
+  <NUMBER: (["0"-"9"])+>
+| <PLUS: "+">
+}
+
+void expr(C_Test2* self) :
+{}
+{
+  <NUMBER> (<PLUS> <NUMBER>)* <EOF>
+  { printf("Parsed expression successfully.\n"); }
+}

@@ -47,3 +47,7 @@ javacc-*.zip
 mvn.log
 test.tmp/
 tmp/
+
+# C language generator test artifacts (generated files only)
+/*.exe
+/c_test/
